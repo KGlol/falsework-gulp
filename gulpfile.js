@@ -7,48 +7,54 @@
 // 依赖的导入
 const gulp = require('gulp'),
   concat = require('gulp-concat'),
-  gif = require('gulp-if'),
-  minifyCss = require('gulp-minify-css'), // 压缩css
+  gulpIf = require('gulp-if'),
   rename = require('gulp-rename'),
+  minifyCss = require('gulp-minify-css'), // 压缩css
+  // cleanCss = require('gulp-clean-css'), // 压缩css
+  sass = require('gulp-sass'), // gulp-sass会自动加载所有关联的sass文件
+  autoprefixer = require('gulp-autoprefixer'),
+  fs = require('fs'),
   uglify = require('gulp-uglify'), // js压缩&混淆
   // minify = require('gulp-minify'), // js压缩
-  cleanCss = require('gulp-clean-css'), // 压缩css
-  sass = require('gulp-sass'); // gulp-sass会自动加载所有关联的sass文件
+  browserSync = require('browser-sync').create();
+
 
 // 路径管理
-const sassSrc = './src/assets/sass',
+const sassSrc = './src/assets/sass/**/*.scss',
+  jsSrc = './src/assets/js/**/*.js',
   htmlSrc = './src/html',
   imageSrc = './src/assets/images',
   buildSrc = './build';
 
 // 执行环境
-const isProduction = process.env.ENV === 'prod';
+// process.env.ENV
+const isProduction = (process.env.NODE_ENV || 'development').trim().toLowerCase() !== 'development';
+
+// 文件重命名回调(压缩)
+const renameMethod = path => path.basename += '.min';
 
 // gulp task
 
-// 文件重命名(压缩)
-gulp.task('rename', () => {
-  Path.basename += '.min'
-})
-
 // sass编译  css压缩
-gulp.task('sass', () => {
-  gulp.src(sassSrc + '/*.scss')
+const compileSass = (done) => {
+  gulp.src(sassSrc)
   .pipe(concat('main.scss'))
   .pipe(sass())
-  // .pipe(minifyCss())
+  .pipe(autoprefixer())
+  .pipe(gulpIf(isProduction, minifyCss()))
+  .pipe(gulpIf(isProduction, rename(renameMethod)))
   .pipe(gulp.dest(buildSrc + '/css/'))
-  console.log('完成了sass');
-})
+  done() // 任务完成信号
+}
 
-// 监视sass
-gulp.task('sass:watch', () => {
-  gulp.watch(sassSrc + '/*.scss', ['sass'])
-  console.log('完成了sass:watch');
-})
+// 监视
+const watch = (done) => {
+  gulp.watch(sassSrc, {
+  ignoreInitial: false, // 提前执行回调
+  // events: 'all',  // 监听所有事件
+}, compileSass)
+  done() // 任务完成信号
+}
 
 // 默认执行任务
-gulp.task('default', gulp.series([
-  // 'sass',
-  'sass:watch',
-]))
+gulp.task('default', watch)
