@@ -1,3 +1,7 @@
 .index {
   background: #000;
-  border-radius: 50px; }
+  color: #fff; }
+
+main {
+  font-size: 0%;
+  grid-auto-columns: 0%; }

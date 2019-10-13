@@ -39,7 +39,7 @@ const renameMethod = path => path.basename += '.min';
 const compileSass = (done) => {
   gulp.src(sassSrc)
   .pipe(concat('main.scss'))
-  .pipe(sass())
+  .pipe(sass().on('error', sass.logError))
   .pipe(autoprefixer())
   .pipe(gulpIf(isProduction, minifyCss()))
   .pipe(gulpIf(isProduction, rename(renameMethod)))
@@ -58,3 +58,15 @@ const watch = (done) => {
 
 // 默认执行任务
 gulp.task('default', watch)
+
+/**
+ * 备忘
+ */
+// autoprefixer设置
+// autoprefixer({
+  // browsers: ['> 1%'], // 全球使用率超过1%的浏览器
+  // cascade: isProduction, // 如果css未压缩，是否美化属性值（默认true）
+  // // -webkit-transform: rotate(45deg);
+  // //         transform: rotate(45deg);
+  // remove: true, // 是否去掉不必要的前缀（默认true）
+// }
