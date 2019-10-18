@@ -1,0 +1,13 @@
+{
+  "presets": [
+    // Without any configuration options, babel-preset-env behaves exactly the same as babel-preset-latest (or babel-preset-es2015, babel-preset-es2016, and babel-preset-es2017 together).
+    // babel-preset-es2015 包含ie10
+    "@babel/preset-env"
+    // ["@babel/preset-env",
+    // {
+    //   "targets": {
+    //     "browsers": ["last 1 Chrome versions"]
+    //   }
+    // }]
+  ]
+}

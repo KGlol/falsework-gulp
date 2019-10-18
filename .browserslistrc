@@ -1,0 +1,5 @@
+# browserslist设置，仅在单独使用gulp-autoprefixer插件时需要使用
+last 3 version
+> 5%
+maintained node versions
+not dead

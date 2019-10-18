@@ -1,10 +1,13 @@
-.index {
-  background: #000;
-  color: #fff;;
+// @import './base/_base';
+// @import './components/_';
+// @import './helpers/_helpers';
+
+body {
+  font-size: 70px;
+  color: aquamarine;
+  // visibility: hidden;
 }
 
-main {
-  font-size: 0%;
-  grid-auto-columns: 0%;
-  
+.index {
+  color: #fff;
 }
