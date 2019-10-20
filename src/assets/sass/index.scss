@@ -3,11 +3,12 @@
 // @import './helpers/_helpers';
 
 body {
-  font-size: 70px;
   color: aquamarine;
+    font-size: 70px;
   // visibility: hidden;
 }
 
 .index {
+  position: relative;
   color: #fff;
 }

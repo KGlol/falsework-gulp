@@ -1,12 +1,14 @@
-  html {
+html {
   box-sizing: border-box;
-  font-size:  100;
+  font-size: 100;
 }
 
-*,  *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: inherit;
 }
 
 body {
-  font-family:  'Roboto', sans-serif;
+  font-family: 'Roboto', sans-serif;
 }

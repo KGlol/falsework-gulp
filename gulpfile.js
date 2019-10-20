@@ -9,13 +9,14 @@ const gulp = require('gulp'),
   gulpIf = require('gulp-if'),
   rename = require('gulp-rename'),
   replace = require('gulp-replace'),
-  // plumber = require('gulp-plumber'),  
+  del = require('del'),
+  // plumber = require('gulp-plumber'),
   imageMin = require('gulp-imagemin'), // 图片压缩(包括PNG、JPEG、GIF和SVG图片)
   minifyCss = require('gulp-minify-css'), // 压缩css
   // cleanCss = require('gulp-clean-css'), // 压缩css
   sass = require('gulp-sass'), // gulp-sass会自动加载所有关联的sass文件
   autoprefixer = require('gulp-autoprefixer'),
-  sasslint = require('gulp-sass-lint'),
+  sasslint = require('gulp-stylelint'),
   // fs = require('fs'),
   babel = require('gulp-babel'),
   eslint = require('gulp-eslint'),
@@ -47,27 +48,25 @@ const isProduction = (process.env.NODE_ENV || 'development').trim().toLowerCase(
 // 文件重命名回调(压缩)
 const renameMethod = path => path.basename += '.min';
 const renameConfigObj = { suffix: '.min' };
-// 错误处理程序
-const onError = (error) => {
-  const title = error.plugin + ' ' + error.name
-  const msg = error.message
-  const errContent = msg.replace(/\n/g, '\\A ')
-
-  notify.onError({
-    title: title,
-    message: errContent,
-    sound: true
-  })(error)
-
-  this.emit('end')
-}
 
 // gulp task
+
+// const cleanBuild = async (done) => {
+//   const deletedPaths = await del(buildSrc + '/**')
+//   console.log('Deleted files and directories:\n', deletedPaths.join('\n'))
+//   done()
+// }
+
+const cleanBuild = (done) => {
+    const deletedPaths = del.sync(buildSrc + '/**')
+    console.log('Deleted files and directories:\n', deletedPaths.join('\n'))
+    done()
+  }
 
 // 图片压缩(TODO无效)
 const compressImages  = (done) => {
   gulp.src(imageSrc)
-  .pipe(imageMin())
+  .pipe(imageMin({ verbose: true }))
   .pipe(gulp.dest(buildSrc))
   done()
 }
@@ -75,18 +74,31 @@ const compressImages  = (done) => {
 // sass格式检查
 const sassLint = (done) => {
   gulp.src(sassSrc)
-  .pipe(sasslint())
-  .pipe(sasslint.format())
-  // .pipe(sasslint.failOnError())
+    .pipe(sasslint(
+      {
+        failAfterError: false,
+        reporters: [
+          { formatter: 'string', console: true }
+        ]
+      }
+  ))
   console.log('完成了sasslint');
+  done()
+}
+
+// 自动修复sass格式
+const stylelintFix = (done) => {
+  gulp.src(sassSrc)
+  .pipe(sassLint({ fix: true }))
+  .pipe(gulp.dest('.'))
   done()
 }
 
 // sass编译  css压缩
 const compileSass = (done) => {
   gulp.src(sassSrc)
-  .pipe(sasslint())
-  .pipe(sasslint.format())
+  // .pipe(sasslint())
+  // .pipe(sasslint.format())
   // .pipe(sasslint.failOnError())
   .pipe(concat('main.scss'))
   .pipe(sass({
@@ -146,6 +158,8 @@ const watch = (done) => {
   done() // 任务完成信号
 }
 
+exports.stylelintFix = stylelintFix
+
 // 默认执行开发环境编译 gulp
 exports.default = gulp.series(
   cacheBust,
@@ -154,6 +168,7 @@ exports.default = gulp.series(
 
 // 项目打包 gulp build
 exports.build = gulp.series(
+  cleanBuild,
   cacheBust,
   gulp.parallel(compileSass, compressImages, compileJs)
 )
