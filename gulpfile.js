@@ -38,7 +38,7 @@ const sassSrc = './src/assets/sass/**/*.{sass,scss}',
   // sassSrc = './src/assets/sass/**/*.s+(a|c)ss',
   jsSrc = './src/assets/js/**/*.js',
   htmlSrc = './src/html',
-  imageSrc = './src/assets/images',
+  imageSrc = './src/assets/img',
   buildSrc = './build';
 
 // 执行环境
@@ -64,8 +64,8 @@ const cleanBuild = (done) => {
   }
 
 // 图片压缩(TODO无效)
-const compressImages  = (done) => {
-  gulp.src(imageSrc)
+const compressImage  = (done) => {
+  gulp.src(imageSrc + '/ **')
   .pipe(imageMin({ verbose: true }))
   .pipe(gulp.dest(buildSrc))
   done()
@@ -89,7 +89,7 @@ const sassLint = (done) => {
 // 自动修复sass格式
 const stylelintFix = (done) => {
   gulp.src(sassSrc)
-  .pipe(sassLint({ fix: true }))
+  .pipe(sasslint({ fix: true }))
   .pipe(gulp.dest('.'))
   done()
 }
@@ -154,11 +154,12 @@ const watch = (done) => {
   }, gulp.series(sassLint, compileSass))
   gulp.watch(jsSrc).on('change',  gulp.series(jsLint, browserSync.reload))
   gulp.watch('./**/*.html').on('change', browserSync.reload)
-  gulp.watch(imageSrc).on('change', compressImages)
+  gulp.watch(imageSrc).on('change', compressImage)
   done() // 任务完成信号
 }
 
-exports.stylelintFix = stylelintFix
+// 修复sass格式
+exports.sassFix = gulp.series(stylelintFix)
 
 // 默认执行开发环境编译 gulp
 exports.default = gulp.series(
@@ -170,7 +171,7 @@ exports.default = gulp.series(
 exports.build = gulp.series(
   cleanBuild,
   cacheBust,
-  gulp.parallel(compileSass, compressImages, compileJs)
+  gulp.parallel(compileSass, compressImage, compileJs)
 )
 
 /**
