@@ -2,13 +2,12 @@
 // @import './components/_';
 // @import './helpers/_helpers';
 
-body {
-  color: aquamarine;
-    font-size: 70px;
-  // visibility: hidden;
+
+div.title {
+  font-size: 16px;
 }
 
-.index {
-position: relative;
-  color: #fff;
+a.jump_link {
+  font-size: 1.6rem;
+  transform: rotate(0deg);
 }
