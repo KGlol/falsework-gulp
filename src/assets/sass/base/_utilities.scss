@@ -1,0 +1,16 @@
+/* 非主布局样式集合 */
+
+.u-text-center {
+  text-align: center;
+}
+
+// 文字省略号 (配合宽度)
+.word-with-ellipsis {
+  display: inline-block;
+  overflow: hidden;
+  // width: 200px;
+  -webkit-white-space: nowrap;
+  white-space: nowrap;
+  -webkit-text-overflow: ellipsis;
+  text-overflow: ellipsis;
+}

@@ -1,13 +1,12 @@
-// @import './base/_base';
-// @import './components/_';
-// @import './helpers/_helpers';
-
-
-div.title {
-  font-size: 16px;
-}
-
-a.jump_link {
-  font-size: 1.6rem;
-  transform: rotate(0deg);
-}
+@import 'base/base';
+@import 'base/animations';
+@import 'base/utilities';
+@import 'base/typography';
+@import "abstracts/functions";
+@import "abstracts/mixins";
+@import "abstracts/variables";
+@import "layout/header";
+@import "layout/footer";
+@import "layout/navigation";
+@import "components/popup";
+@import "pages/home";

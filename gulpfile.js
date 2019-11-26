@@ -34,7 +34,8 @@ const gulp = require('gulp'),
 // ]
 // 路径管理
 // TODO 解决监控所有文件和sass导入重复编译的问题
-const sassSrc = './src/assets/sass/**/*.{sass,scss}',
+const sassSrc = './src/assets/sass/index.{sass,scss}',
+  // sassSrc = './src/assets/sass/**/*.{sass,scss}',
   // sassSrc = './src/assets/sass/**/*.s+(a|c)ss',
   jsSrc = './src/assets/js/**/*.js',
   htmlSrc = './src/html',
@@ -86,7 +87,7 @@ const sassLint = (done) => {
   done()
 }
 
-// 自动修复sass格式
+// 自动修复sass格式(暂未使用)
 const stylelintFix = (done) => {
   gulp.src(sassSrc)
   .pipe(sasslint({ fix: true }))
@@ -158,7 +159,7 @@ const watch = (done) => {
   done() // 任务完成信号
 }
 
-// 修复sass格式
+// 修复sass格式(暂未使用)
 exports.sassFix = gulp.series(stylelintFix)
 
 // 默认执行开发环境编译 gulp
