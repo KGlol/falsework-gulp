@@ -25,7 +25,7 @@ const gulp = require('gulp'),
   // minify = require('gulp-minify'), // js压缩(未安装)
   browserSync = require('browser-sync').create();
 // gulp-changed
-// gulp - line - ending - corrector
+// gulp-line-ending-corrector
 // gulp-source-map
 
 // [
@@ -34,12 +34,12 @@ const gulp = require('gulp'),
 // ]
 // 路径管理
 // TODO 解决监控所有文件和sass导入重复编译的问题
-const sassSrc = './src/assets/sass/index.{sass,scss}',
-  // sassSrc = './src/assets/sass/**/*.{sass,scss}',
+const sassSrc = './src/assets/sass/**/*.{sass,scss}',
+  // sassSrc = './src/assets/sass/index.{sass,scss}', // 无效
   // sassSrc = './src/assets/sass/**/*.s+(a|c)ss',
   jsSrc = './src/assets/js/**/*.js',
   htmlSrc = './src/html',
-  imageSrc = './src/assets/img',
+  imageSrc = './src/assets/images',
   buildSrc = './build';
 
 // 执行环境
@@ -50,25 +50,18 @@ const isProduction = (process.env.NODE_ENV || 'development').trim().toLowerCase(
 const renameMethod = path => path.basename += '.min';
 const renameConfigObj = { suffix: '.min' };
 
-// gulp task
-
-// const cleanBuild = async (done) => {
-//   const deletedPaths = await del(buildSrc + '/**')
-//   console.log('Deleted files and directories:\n', deletedPaths.join('\n'))
-//   done()
-// }
-
+// 清理build文件夹
 const cleanBuild = (done) => {
-    const deletedPaths = del.sync(buildSrc + '/**')
-    console.log('Deleted files and directories:\n', deletedPaths.join('\n'))
-    done()
-  }
+  const deletedPaths = del.sync(buildSrc + '/**')
+  console.log('Deleted files and directories:\n', deletedPaths.join('\n'))
+  done()
+}
 
-// 图片压缩(TODO无效)
+// 图片压缩
 const compressImage  = (done) => {
-  gulp.src(imageSrc + '/ **')
-  .pipe(imageMin({ verbose: true }))
-  .pipe(gulp.dest(buildSrc))
+  gulp.src(imageSrc + '/**')
+    .pipe(imageMin({ verbose: true }))
+    .pipe(gulp.dest(buildSrc + '/images'))
   done()
 }
 
@@ -90,46 +83,42 @@ const sassLint = (done) => {
 // 自动修复sass格式(暂未使用)
 const stylelintFix = (done) => {
   gulp.src(sassSrc)
-  .pipe(sasslint({ fix: true }))
-  .pipe(gulp.dest('.'))
+    .pipe(sasslint({ fix: true }))
+    .pipe(gulp.dest('.'))
   done()
 }
 
 // sass编译  css压缩
 const compileSass = (done) => {
   gulp.src(sassSrc)
-  // .pipe(sasslint())
-  // .pipe(sasslint.format())
-  // .pipe(sasslint.failOnError())
-  .pipe(concat('main.scss'))
-  .pipe(sass({
-    outputStyle: 'expanded'  // 大括号完全展开
-  }).on('error', sass.logError))
-  .pipe(autoprefixer())
-  .pipe(gulpIf(isProduction, minifyCss()))
-  .pipe(gulpIf(isProduction, rename(renameMethod)))
-  .pipe(gulp.dest(buildSrc + '/css'))
-  .pipe(browserSync.stream()) // 样式变化时并不会刷新页面, 只是实时更改样式值
+    .pipe(concat('main.scss'))
+    // 完全展开大括号
+    .pipe(sass({ outputStyle: 'expanded' }).on('error', sass.logError))
+    .pipe(autoprefixer())
+    .pipe(gulpIf(isProduction, minifyCss()))
+    .pipe(gulpIf(isProduction, rename(renameMethod)))
+    .pipe(gulp.dest(buildSrc + '/css'))
+    .pipe(browserSync.stream()) // 样式变化时并不会刷新页面, 只是实时更改样式值
   done() // 任务完成信号
 }
 
 // js格式检查
 const jsLint = (done) => {
   gulp.src(jsSrc)
-  // .pipe(plumber(onError))
-  .pipe(eslint())
-  .pipe(eslint.format())
-  // .pipe(eslint.result()) // 可配置输出参数
+    // .pipe(plumber(onError))
+    .pipe(eslint())
+    .pipe(eslint.format())
+    // .pipe(eslint.result()) // 可配置输出参数
   done()
 }
 // js压缩
 const compileJs = (done) => {
   gulp.src(jsSrc)
-  .pipe(concat('main.js'))
-  .pipe(babel())
-  .pipe(gulpIf(isProduction, uglify())) // TIP 无法直接压缩ES6语法
-  .pipe(gulpIf(isProduction, rename(renameMethod)))
-  .pipe(gulp.dest(buildSrc + '/js'))
+    .pipe(concat('main.js'))
+    .pipe(babel())
+    .pipe(gulpIf(isProduction, uglify())) // TIP 无法直接压缩ES6语法
+    .pipe(gulpIf(isProduction, rename(renameMethod)))
+    .pipe(gulp.dest(buildSrc + '/js'))
   done()
 }
 
@@ -137,8 +126,8 @@ const compileJs = (done) => {
 const cbString = new Date().getTime();
 const cacheBust = (done) => {
   gulp.src('index.html')
-  .pipe(replace(/cb=\d+/g, 'cb=' + cbString))
-  .pipe(gulp.dest('.'))
+    .pipe(replace(/cb=\d+/g, 'cb=' + cbString))
+    .pipe(gulp.dest('.'))
   done()
 }
 
@@ -149,10 +138,11 @@ const watch = (done) => {
       baseDir: './'
     }
   })
-  gulp.watch(sassSrc, {
-  ignoreInitial: false, // false提前执行回调
-  // events: 'all',  // 监听所有事件
-  }, gulp.series(sassLint, compileSass))
+  const watchTaskConfig = {
+    ignoreInitial: false, // false提前执行回调
+    // events: 'all',  // 监听所有事件
+  }
+  gulp.watch(sassSrc, watchTaskConfig, gulp.series(sassLint, compileSass))
   gulp.watch(jsSrc).on('change',  gulp.series(jsLint, browserSync.reload))
   gulp.watch('./**/*.html').on('change', browserSync.reload)
   gulp.watch(imageSrc).on('change', compressImage)
@@ -163,10 +153,7 @@ const watch = (done) => {
 exports.sassFix = gulp.series(stylelintFix)
 
 // 默认执行开发环境编译 gulp
-exports.default = gulp.series(
-  cacheBust,
-  watch
-)
+exports.default = gulp.series(cleanBuild, cacheBust, watch)
 
 // 项目打包 gulp build
 exports.build = gulp.series(
@@ -177,18 +164,18 @@ exports.build = gulp.series(
 
 /**
  * 备忘
- */
-// autoprefixer设置
-// autoprefixer({
-  // browsers: ['> 1%'], // 全球使用率超过1%的浏览器
-  // cascade: isProduction, // 如果css未压缩，是否美化属性值（默认true）
-  // // -webkit-transform: rotate(45deg);
-  // //         transform: rotate(45deg);
-  // remove: true, // 是否去掉不必要的前缀（默认true）
-// }
-
-// 目标浏览器browserlist
-  // 可以在 .babelrc 文件、package.json文件、browserslist中指定浏览器版本选项，
-  // 优先级规则是.babelrc文件定义了则会忽略 browserslist、
-  // .babelrc 没有定义则会搜索 browserslist 和 package.json 两者应该只定义一个，
-  // 否则会报错。
+  * autoprefixer设置
+  * autoprefixer({
+  *  browsers: ['> 1%'], // 全球使用率超过1%的浏览器
+  *  cascade: isProduction, // 如果css未压缩，是否美化属性值（默认true）
+  *    -webkit-transform: rotate(45deg);
+  *            transform: rotate(45deg);
+  *  remove: true, // 是否去掉不必要的前缀（默认true）
+  * }
+  *
+  * 目标浏览器browserlist
+  *  可以在 .babelrc 文件、package.json文件、browserslist中指定浏览器版本选项，
+  *  优先级规则是.babelrc文件定义了则会忽略 browserslist、
+  *  .babelrc 没有定义则会搜索 browserslist 和 package.json 两者应该只定义一个，
+  *  否则会报错。
+*/
